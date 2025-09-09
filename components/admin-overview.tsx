@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Users, FileText, Flag, CheckCircle, Clock, AlertTriangle } from "lucide-react"
+import { Users, FileText, Flag, CheckCircle, Clock, AlertTriangle, UserPlus, FileCheck } from "lucide-react"
 
 interface AdminStats {
   totalUsers: number
@@ -19,11 +19,17 @@ interface AdminStats {
     admin: number
   }
   projectsByStatus: {
-    planning: number
+    pending: number
+    planned: number
     ongoing: number
     completed: number
-    suspended: number
   }
+  recentActivity: Array<{
+    type: string
+    description: string
+    timestamp: string
+    details: string
+  }>
 }
 
 export function AdminOverview() {
@@ -45,6 +51,47 @@ export function AdminOverview() {
       console.error("Failed to fetch admin stats:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'user_registered':
+        return <UserPlus className="h-5 w-5 text-blue-500" />
+      case 'project_created':
+        return <FileText className="h-5 w-5 text-green-500" />
+      case 'report_created':
+        return <Flag className="h-5 w-5 text-red-500" />
+      default:
+        return <AlertTriangle className="h-5 w-5 text-yellow-500" />
+    }
+  }
+
+  const getActivityTitle = (type: string) => {
+    switch (type) {
+      case 'user_registered':
+        return 'New user registered'
+      case 'project_created':
+        return 'Project submitted'
+      case 'report_created':
+        return 'Report filed'
+      default:
+        return 'Activity'
+    }
+  }
+
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date()
+    const activityTime = new Date(timestamp)
+    const diffInHours = Math.floor((now.getTime() - activityTime.getTime()) / (1000 * 60 * 60))
+
+    if (diffInHours < 1) {
+      return 'Less than 1 hour ago'
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24)
+      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
     }
   }
 
@@ -145,7 +192,7 @@ export function AdminOverview() {
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm">Planning</span>
-              <Badge variant="secondary">{stats.projectsByStatus.planning}</Badge>
+              <Badge variant="secondary">{stats.projectsByStatus.planned}</Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm">Ongoing</span>
@@ -156,10 +203,6 @@ export function AdminOverview() {
               <Badge variant="outline" className="border-green-500 text-green-700">
                 {stats.projectsByStatus.completed}
               </Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm">Suspended</span>
-              <Badge variant="destructive">{stats.projectsByStatus.suspended}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -173,30 +216,23 @@ export function AdminOverview() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 border rounded-lg">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">New project submission pending review</p>
-                <p className="text-xs text-muted-foreground">Road construction project in Minna ward</p>
+            {stats.recentActivity && stats.recentActivity.length > 0 ? (
+              stats.recentActivity.map((activity, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                  {getActivityIcon(activity.type)}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{getActivityTitle(activity.type)}</p>
+                    <p className="text-xs text-muted-foreground">{activity.description}</p>
+                  </div>
+                  <Badge variant="secondary">{formatTimeAgo(activity.timestamp)}</Badge>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No recent activity to display</p>
               </div>
-              <Badge variant="secondary">2 hours ago</Badge>
-            </div>
-            <div className="flex items-center gap-3 p-3 border rounded-lg">
-              <Flag className="h-5 w-5 text-red-500" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Content report filed</p>
-                <p className="text-xs text-muted-foreground">Inappropriate comment on water project</p>
-              </div>
-              <Badge variant="secondary">4 hours ago</Badge>
-            </div>
-            <div className="flex items-center gap-3 p-3 border rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Project approved and published</p>
-                <p className="text-xs text-muted-foreground">School renovation in Bosso LGA</p>
-              </div>
-              <Badge variant="secondary">6 hours ago</Badge>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>

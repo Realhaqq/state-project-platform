@@ -21,9 +21,25 @@ const subscriptionSchema = z.object({
   phoneWhatsapp: z.string().optional(),
   address: z.string().optional(),
   lgaId: z.string().min(1, "Please select an LGA"),
-  wardId: z.string().min(1, "Please select a ward"),
-  pollingUnitId: z.string().min(1, "Please select a polling unit"),
+  wardId: z.string().optional(),
+  pollingUnitId: z.string().optional(),
   traits: z.array(z.string()).min(1, "Please select at least one interest"),
+}).refine((data) => {
+  if (data.lgaId && (!data.wardId || data.wardId.length === 0)) {
+    return false
+  }
+  return true
+}, {
+  message: "Please select a ward",
+  path: ["wardId"],
+}).refine((data) => {
+  if (data.wardId && (!data.pollingUnitId || data.pollingUnitId.length === 0)) {
+    return false
+  }
+  return true
+}, {
+  message: "Please select a polling unit",
+  path: ["pollingUnitId"],
 })
 
 type SubscriptionFormData = z.infer<typeof subscriptionSchema>
@@ -77,15 +93,15 @@ export function SubscriptionForm() {
   useEffect(() => {
     if (watchedLgaId) {
       fetchWards(watchedLgaId)
-      setValue("wardId", "")
-      setValue("pollingUnitId", "")
+      setValue("wardId", undefined)
+      setValue("pollingUnitId", undefined)
     }
   }, [watchedLgaId, setValue])
 
   useEffect(() => {
     if (watchedWardId) {
       fetchPollingUnits(watchedWardId)
-      setValue("pollingUnitId", "")
+      setValue("pollingUnitId", undefined)
     }
   }, [watchedWardId, setValue])
 
@@ -95,7 +111,7 @@ export function SubscriptionForm() {
       const response = await fetch("/api/lgas")
       if (response.ok) {
         const data = await response.json()
-        setLgas(data)
+        setLgas(data.lgas || [])
       }
     } catch (error) {
       console.error("Failed to fetch LGAs:", error)
@@ -113,10 +129,10 @@ export function SubscriptionForm() {
     try {
       setLoadingWards(true)
       setWards([])
-      const response = await fetch(`/api/wards?lgaId=${lgaId}`)
+      const response = await fetch(`/api/wards?lga_id=${lgaId}`)
       if (response.ok) {
         const data = await response.json()
-        setWards(data)
+        setWards(data.wards || [])
       }
     } catch (error) {
       console.error("Failed to fetch wards:", error)
@@ -269,7 +285,7 @@ export function SubscriptionForm() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="lgaId">Local Government Area</Label>
-                <Select onValueChange={(value) => setValue("lgaId", value)} disabled={loadingLgas}>
+                <Select value={watchedLgaId} onValueChange={(value) => setValue("lgaId", value)} disabled={loadingLgas}>
                   <SelectTrigger>
                     <SelectValue placeholder={loadingLgas ? "Loading LGAs..." : "Select LGA"} />
                   </SelectTrigger>
@@ -286,7 +302,7 @@ export function SubscriptionForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="wardId">Ward</Label>
-                <Select onValueChange={(value) => setValue("wardId", value)} disabled={!watchedLgaId || loadingWards}>
+                <Select value={watchedWardId} onValueChange={(value) => setValue("wardId", value)} disabled={!watchedLgaId || loadingWards}>
                   <SelectTrigger>
                     <SelectValue placeholder={
                       !watchedLgaId
@@ -309,7 +325,7 @@ export function SubscriptionForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="pollingUnitId">Polling Unit</Label>
-                <Select onValueChange={(value) => setValue("pollingUnitId", value)} disabled={!watchedWardId || loadingPollingUnits}>
+                <Select value={watch("pollingUnitId")} onValueChange={(value) => setValue("pollingUnitId", value)} disabled={!watchedWardId || loadingPollingUnits}>
                   <SelectTrigger>
                     <SelectValue placeholder={
                       !watchedWardId

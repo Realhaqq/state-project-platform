@@ -41,16 +41,25 @@ export default function HomePage() {
               transparency initiative.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="secondary">
-                Subscribe to Updates
-              </Button>
-              <Button
+                <Button
+                size="lg"
+                variant="secondary"
+                asChild
+                >
+                <a href="/subscription">
+                  Subscribe to Updates
+                </a>
+                </Button>
+                <Button
                 size="lg"
                 variant="outline"
                 className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-              >
-                View All Projects
-              </Button>
+                asChild
+                >
+                <a href="/projects">
+                  View All Projects
+                </a>
+                </Button>
             </div>
           </div>
         </section>

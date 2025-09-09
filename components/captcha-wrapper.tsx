@@ -22,12 +22,16 @@ export function CaptchaWrapper({ onVerify, onError }: CaptchaWrapperProps) {
     const siteKey = getHCaptchaSiteKey()
 
     const loadHCaptcha = () => {
-      if (window.hcaptcha && captchaRef.current) {
-        widgetId.current = window.hcaptcha.render(captchaRef.current, {
-          sitekey: siteKey,
-          callback: onVerify,
-          "error-callback": onError,
-        })
+      if (window.hcaptcha && captchaRef.current && !widgetId.current) {
+        try {
+          widgetId.current = window.hcaptcha.render(captchaRef.current, {
+            sitekey: siteKey,
+            callback: onVerify,
+            "error-callback": onError,
+          })
+        } catch (error) {
+          console.error('Failed to render hCaptcha widget:', error)
+        }
       }
     }
 
@@ -44,7 +48,15 @@ export function CaptchaWrapper({ onVerify, onError }: CaptchaWrapperProps) {
 
     return () => {
       if (window.hcaptcha && widgetId.current) {
-        window.hcaptcha.remove(widgetId.current)
+        try {
+          // Check if the widget still exists before trying to remove it
+          if (captchaRef.current && captchaRef.current.children.length > 0) {
+            window.hcaptcha.remove(widgetId.current)
+          }
+        } catch (error) {
+          // Silently handle the error - widget may already be removed
+          console.warn('Failed to remove hCaptcha widget:', error)
+        }
       }
     }
   }, [onVerify, onError])

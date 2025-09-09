@@ -46,6 +46,37 @@ export async function GET() {
       FROM reports
     `
 
+    // Get recent activity
+    const recentActivity = await sql`
+      SELECT
+        'user_registered' as type,
+        u.name as description,
+        u.created_at as timestamp,
+        u.email as details
+      FROM users u
+      WHERE u.created_at >= NOW() - INTERVAL '7 days'
+      UNION ALL
+      SELECT
+        'project_created' as type,
+        p.title as description,
+        p.created_at as timestamp,
+        u.name as details
+      FROM projects p
+      LEFT JOIN users u ON p.created_by = u.id
+      WHERE p.created_at >= NOW() - INTERVAL '7 days'
+      UNION ALL
+      SELECT
+        'report_created' as type,
+        r.message as description,
+        r.created_at as timestamp,
+        u.name as details
+      FROM reports r
+      LEFT JOIN users u ON r.created_by = u.id
+      WHERE r.created_at >= NOW() - INTERVAL '7 days'
+      ORDER BY timestamp DESC
+      LIMIT 10
+    `
+
     const stats = {
       totalUsers: Number.parseInt(userStats[0].total_users),
       totalProjects: Number.parseInt(projectStats[0].total_projects),
@@ -70,6 +101,7 @@ export async function GET() {
         resolved: Number.parseInt(reportStats[0].resolved_reports),
         rejected: Number.parseInt(reportStats[0].rejected_reports),
       },
+      recentActivity: recentActivity,
     }
 
     return NextResponse.json(stats)
