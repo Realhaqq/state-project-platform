@@ -1,6 +1,4 @@
 import { Metadata } from "next"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
 import { SubscriptionForm } from "@/components/subscription-form"
 
 export const metadata: Metadata = {
@@ -11,9 +9,7 @@ export const metadata: Metadata = {
 
 export default function SubscriptionPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader />
-
+    <div className="bg-background">
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
@@ -82,8 +78,6 @@ export default function SubscriptionPage() {
           </div>
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   )
 }

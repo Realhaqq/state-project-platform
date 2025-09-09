@@ -19,7 +19,7 @@ export function AdminDashboard() {
             <h1 className="text-xl sm:text-2xl font-bold text-foreground break-words">Admin Dashboard</h1>
             <p className="text-sm text-muted-foreground break-words">Niger State Development Platform</p>
           </div>
-          <AdminUserDropdown />
+          {/* <AdminUserDropdown /> */}
         </div>
       </header>
 

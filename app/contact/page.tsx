@@ -1,8 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -73,9 +71,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader />
-
+    <div className="bg-background">
       <main>
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary/10 via-primary/5 to-background py-20">
@@ -365,8 +361,6 @@ export default function ContactPage() {
           </div>
         </section>
       </main>
-
-      <SiteFooter />
     </div>
   )
 }
