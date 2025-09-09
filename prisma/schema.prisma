@@ -1,0 +1,387 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lga {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
+
+  wards              Ward[]
+  users              User[]
+  publisherPasscodes PublisherPasscode[]
+  projects           Project[]
+  subscriptions      Subscription[]
+
+  @@map("lgas")
+}
+
+model Ward {
+  id     String @id @default(uuid()) @db.Uuid
+  lgaId  String @map("lga_id") @db.Uuid
+  name   String
+
+  lga                Lga                 @relation(fields: [lgaId], references: [id])
+  pollingUnits       PollingUnit[]
+  users              User[]
+  publisherPasscodes PublisherPasscode[]
+  projects           Project[]
+  subscriptions      Subscription[]
+
+  @@unique([lgaId, name])
+  @@map("wards")
+}
+
+model PollingUnit {
+  id     String  @id @default(uuid()) @db.Uuid
+  wardId String  @map("ward_id") @db.Uuid
+  name   String
+  code   String?
+
+  ward          Ward           @relation(fields: [wardId], references: [id])
+  projects      Project[]
+  subscriptions Subscription[]
+
+  @@unique([wardId, name])
+  @@map("polling_units")
+}
+
+enum UserRole {
+  super_admin
+  admin
+  publisher
+  citizen
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String?   @map("name")
+  email         String    @unique @map("email")
+  password      String?   @map("password")
+  phone         String?   @map("phone")
+  role          UserRole  @default(citizen) @map("role")
+  isActive      Boolean   @default(true) @map("is_active")
+  emailVerified Boolean   @default(false) @map("email_verified")
+  lgaId         String?   @map("lga_id") @db.Uuid
+  wardId        String?   @map("ward_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime? @default(now()) @map("updated_at")
+  resetToken    String?   @map("reset_token")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
+
+  lga                    Lga?                    @relation(fields: [lgaId], references: [id])
+  ward                   Ward?                   @relation(fields: [wardId], references: [id])
+  createdPasscodes       PublisherPasscode[]     @relation("PasscodeCreator")
+  createdProjects        Project[]               @relation("ProjectCreator")
+  createdComments        Comment[]               @relation("CommentCreator")
+  createdReports         Report[]                @relation("ReportCreator")
+  approvedComments       Comment[]               @relation("CommentApprover")
+  resolvedReports        Report[]                @relation("ReportResolver")
+  subscriptions          Subscription[]
+  auditLogs              AuditLog[]
+  projectStatusHistories ProjectStatusHistory[]
+  heroImages             HeroImage[]
+
+  @@index([role])
+  @@index([lgaId])
+  @@index([wardId])
+  @@index([createdAt])
+  @@index([resetToken])
+  @@map("users")
+}
+
+model PublisherPasscode {
+  id        String    @id @default(uuid()) @db.Uuid
+  code      String    @unique
+  lgaId     String    @map("lga_id") @db.Uuid
+  wardId    String    @map("ward_id") @db.Uuid
+  expiresAt DateTime? @map("expires_at")
+  maxUses   Int       @default(1) @map("max_uses")
+  usedCount Int       @default(0) @map("used_count")
+  active    Boolean   @default(true)
+  createdBy String    @map("created_by") @db.Uuid
+
+  lga     Lga  @relation(fields: [lgaId], references: [id])
+  ward    Ward @relation(fields: [wardId], references: [id])
+  creator User @relation("PasscodeCreator", fields: [createdBy], references: [id])
+
+  @@map("publisher_passcodes")
+}
+
+enum ProjectStatus {
+  pending
+  planned
+  ongoing
+  completed
+}
+
+enum ProjectCategory {
+  infrastructure
+  education
+  healthcare
+  agriculture
+  water
+  electricity
+  roads
+  housing
+  environment
+  social
+  economic
+  other
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
+}
+
+model Project {
+  id              String         @id @default(uuid()) @db.Uuid
+  title           String
+  description     String?
+  category        ProjectCategory
+  lgaId           String         @map("lga_id") @db.Uuid
+  wardId          String         @map("ward_id") @db.Uuid
+  pollingUnitId   String?        @map("polling_unit_id") @db.Uuid
+  status          ProjectStatus
+  budgetNaira     Decimal?       @map("budget_naira")
+  contractor      String?
+  startDate       DateTime?      @map("start_date") @db.Date
+  endDate         DateTime?      @map("end_date") @db.Date
+  latitude        Decimal?
+  longitude       Decimal?
+  createdBy       String?        @map("created_by") @db.Uuid
+  approvalStatus  ApprovalStatus @default(pending) @map("approval_status")
+  rejectionReason String?        @map("rejection_reason")
+  completionPercentage Int?       @default(0) @map("completion_percentage")
+  isPublished     Boolean        @default(false) @map("is_published")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @default(now()) @updatedAt @map("updated_at")
+  publishedAt     DateTime?      @map("published_at")
+
+  lga           Lga                    @relation(fields: [lgaId], references: [id])
+  ward          Ward                   @relation(fields: [wardId], references: [id])
+  pollingUnit   PollingUnit?           @relation(fields: [pollingUnitId], references: [id])
+  creator       User?                  @relation("ProjectCreator", fields: [createdBy], references: [id])
+  images        ProjectImage[]
+  comments      Comment[]
+  reports       Report[]
+  statusHistory ProjectStatusHistory[]
+
+  @@index([lgaId])
+  @@index([wardId])
+  @@index([status])
+  @@index([approvalStatus])
+  @@index([isPublished])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([lgaId, wardId])
+  @@index([status, isPublished])
+  @@map("projects")
+}
+
+model ProjectImage {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  storagePath String   @map("storage_path")
+  caption     String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([sortOrder])
+  @@map("project_images")
+}
+
+model HeroImage {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  imageUrl    String   @map("image_url")
+  sortOrder   Int      @default(0) @map("sort_order")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdBy   String?  @map("created_by") @db.Uuid
+
+  creator User? @relation(fields: [createdBy], references: [id])
+
+  @@index([sortOrder])
+  @@index([active])
+  @@map("hero_images")
+}
+
+model ProjectStatusHistory {
+  id        String    @id @default(uuid()) @db.Uuid
+  projectId String    @map("project_id") @db.Uuid
+  oldStatus String?   @map("old_status")
+  newStatus String    @map("new_status")
+  changedById String  @map("changed_by") @db.Uuid
+  changedAt DateTime  @default(now()) @map("changed_at")
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  changedBy User    @relation(fields: [changedById], references: [id])
+
+  @@index([projectId])
+  @@index([changedById])
+  @@index([changedAt])
+  @@map("project_status_history")
+}
+
+enum SubscriptionStatus {
+  active
+  rejected
+  unsubscribed
+}
+
+model Subscription {
+  id            String             @id @default(uuid()) @db.Uuid
+  fullName      String             @map("full_name")
+  lgaId         String             @map("lga_id") @db.Uuid
+  wardId        String             @map("ward_id") @db.Uuid
+  pollingUnitId String             @map("polling_unit_id") @db.Uuid
+  address       String?
+  phoneWhatsapp String?            @map("phone_whatsapp")
+  phoneCall     String             @map("phone_call")
+  email         String
+  traits        Json
+  status        SubscriptionStatus @default(active)
+  createdAt     DateTime           @default(now()) @map("created_at")
+  userId        String?            @map("user_id") @db.Uuid
+  projectCategory ProjectCategory? @map("project_category")
+  isActive      Boolean            @default(true) @map("is_active")
+
+  lga         Lga         @relation(fields: [lgaId], references: [id])
+  ward        Ward        @relation(fields: [wardId], references: [id])
+  pollingUnit PollingUnit @relation(fields: [pollingUnitId], references: [id])
+  user        User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([email])
+  @@unique([phoneCall])
+  @@index([lgaId])
+  @@index([wardId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+  @@index([projectCategory])
+  @@index([lgaId, wardId])
+  @@map("subscriptions")
+}
+
+model Comment {
+  id              String         @id @default(uuid()) @db.Uuid
+  projectId       String         @map("project_id") @db.Uuid
+  authorName      String?        @map("author_name")
+  content         String
+  createdAt       DateTime       @default(now()) @map("created_at")
+  approvalStatus  ApprovalStatus @default(pending) @map("approval_status")
+  rejectionReason String?        @map("rejection_reason")
+  createdBy       String?        @map("created_by") @db.Uuid
+  isActive        Boolean        @default(true) @map("is_active")
+  isApproved      Boolean        @default(false) @map("is_approved")
+  isFlagged       Boolean        @default(false) @map("is_flagged")
+  approvedBy      String?        @map("approved_by") @db.Uuid
+  parentId        String?        @map("parent_id") @db.Uuid
+
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator   User?     @relation("CommentCreator", fields: [createdBy], references: [id])
+  approver  User?     @relation("CommentApprover", fields: [approvedBy], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  reports   Report[]
+
+  @@index([projectId])
+  @@index([approvalStatus])
+  @@index([createdAt])
+  @@index([isApproved])
+  @@index([createdBy])
+  @@index([projectId, approvalStatus])
+  @@map("comments")
+}
+
+enum ReportStatus {
+  new
+  in_review
+  resolved
+  rejected
+}
+
+enum ReportType {
+  spam
+  inappropriate
+  misinformation
+  harassment
+  other
+}
+
+model Report {
+  id            String       @id @default(uuid()) @db.Uuid
+  projectId     String?      @map("project_id") @db.Uuid
+  reporterName  String?      @map("reporter_name")
+  reporterEmail String?      @map("reporter_email")
+  reporterPhone String?      @map("reporter_phone")
+  message       String
+  status        ReportStatus @default(new)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  createdBy     String?      @map("created_by") @db.Uuid
+  commentId     String?      @map("comment_id") @db.Uuid
+  reportType    ReportType?  @map("report_type")
+  description   String?      @map("description")
+  isResolved    Boolean      @default(false) @map("is_resolved")
+  resolvedBy    String?      @map("resolved_by") @db.Uuid
+  resolutionNotes String?    @map("resolution_notes")
+  resolvedAt    DateTime?    @map("resolved_at")
+
+  project   Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator   User?      @relation("ReportCreator", fields: [createdBy], references: [id])
+  comment   Comment?   @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  resolver  User?      @relation("ReportResolver", fields: [resolvedBy], references: [id])
+
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([reportType])
+  @@index([createdBy])
+  @@index([commentId])
+  @@index([projectId, status])
+  @@map("reports")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  action    String
+  entity    String
+  entityId  String   @map("entity_id") @db.Uuid
+  meta      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model RateLimit {
+  id             String   @id @default(uuid()) @db.Uuid
+  key            String
+  windowStartsAt DateTime @map("window_starts_at")
+  count          Int
+
+  @@index([key])
+  @@index([windowStartsAt])
+  @@unique([key, windowStartsAt])
+  @@map("rate_limits")
+}
