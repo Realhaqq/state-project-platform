@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Suspense } from "react"
 import "./globals.css"
 import { Providers } from "@/components/providers"
+import "@/lib/polyfills"
 
 export const metadata: Metadata = {
   title: "Niger State Development Platform",

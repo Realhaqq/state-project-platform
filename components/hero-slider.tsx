@@ -79,11 +79,26 @@ export function HeroSlider() {
               <h1 className="text-3xl md:text-5xl font-bold mb-4 text-balance">{slide.title}</h1>
               <p className="text-lg md:text-xl mb-8 text-pretty">{slide.subtitle}</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  Explore Projects
-                </Button>
-                <Button size="lg" variant="outline" className="bg-white/10 border-white text-white hover:bg-white/20">
-                  Latest Updates
+                {slide.link_url ? (
+                  <Button
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90"
+                    asChild
+                  >
+                    <a href={slide.link_url}>Explore Projects</a>
+                  </Button>
+                ) : (
+                  <Button size="lg" className="bg-primary hover:bg-primary/90">
+                    Explore Projects
+                  </Button>
+                )}
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-white/10 border-white text-white hover:bg-white/20"
+                  asChild
+                >
+                  <a href="/subscription">Latest Updates</a>
                 </Button>
               </div>
             </div>

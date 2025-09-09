@@ -13,13 +13,15 @@ const nextConfig = {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        crypto: false,
-        stream: false,
-        assert: false,
-        http: false,
-        https: false,
-        os: false,
-        url: false,
+        crypto: 'crypto-browserify',
+        stream: 'stream-browserify',
+        assert: 'assert',
+        http: 'stream-http',
+        https: 'https-browserify',
+        os: 'os-browserify',
+        url: 'url',
+        buffer: 'buffer',
+        process: 'process/browser',
       }
     }
     return config

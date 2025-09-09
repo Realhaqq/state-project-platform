@@ -3,7 +3,7 @@ import { neon } from "@neondatabase/serverless"
 import { z } from "zod"
 import { sendWelcomeEmail } from "@/lib/email"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 
 const sql = neon(process.env.DATABASE_URL!)
 

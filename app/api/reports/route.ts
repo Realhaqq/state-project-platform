@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { neon } from "@neondatabase/serverless"
 import { z } from "zod"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 
 const sql = neon(process.env.DATABASE_URL!)
 

@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
 import { neon } from "@neondatabase/serverless"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 
 const sql = neon(process.env.DATABASE_URL!)
 

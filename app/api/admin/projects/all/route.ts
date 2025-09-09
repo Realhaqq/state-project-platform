@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || (session.user.role !== "admin" && session.user.role !== "super_admin")) {
+    if (!session || !(session.user as any)?.role || ((session.user as any).role !== "admin" && (session.user as any).role !== "super_admin")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : ""
 
     // Get projects with pagination
-    const projects = await sql`
+    const projectsQuery = `
       SELECT
         p.id,
         p.title,
@@ -90,24 +90,28 @@ export async function GET(request: NextRequest) {
       LEFT JOIN users u ON p.created_by = u.id
       LEFT JOIN comments c ON p.id = c.project_id
       LEFT JOIN project_images pi ON p.id = pi.project_id
-      ${sql.unsafe(whereClause)}
+      ${whereClause}
       GROUP BY p.id, l.name, w.name, u.name, u.email, u.role
       ORDER BY p.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `
 
+    const projects = await sql.unsafe(projectsQuery)
+
     // Get total count for pagination
-    const countResult = await sql`
+    const countQuery = `
       SELECT COUNT(*) as total
       FROM projects p
-      ${sql.unsafe(whereClause)}
+      ${whereClause}
     `
 
-    const total = Number.parseInt(countResult[0].total)
+    const countResult = await sql.unsafe(countQuery)
+
+    const total = Number.parseInt((countResult as any)[0].total)
     const totalPages = Math.ceil(total / limit)
 
     return NextResponse.json({
-      projects: projects.map(project => ({
+      projects: (projects as any).map((project: any) => ({
         id: project.id,
         title: project.title,
         description: project.description || "",
