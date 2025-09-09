@@ -7,6 +7,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { Suspense } from "react"
 import "./globals.css"
 import { Providers } from "@/components/providers"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 import "@/lib/polyfills"
 
 export const metadata: Metadata = {
@@ -22,12 +24,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} min-h-screen flex flex-col`}>
         <Providers>
-          <Suspense fallback={null}>
-            {children}
-            <Toaster />
-          </Suspense>
+          <SiteHeader />
+          <main className="flex-1">
+            <Suspense fallback={null}>
+              {children}
+            </Suspense>
+          </main>
+          <SiteFooter />
+          <Toaster />
         </Providers>
         <Analytics />
       </body>

@@ -117,19 +117,19 @@ export function PublisherProjectDetails({ projectId, onBack, onEdit }: Publisher
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0">
           <Button variant="outline" size="sm" onClick={onBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{project.title}</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold break-words">{project.title}</h1>
             <p className="text-muted-foreground">Project Details</p>
           </div>
         </div>
         {project.approval_status !== 'approved' && (
-          <Button onClick={onEdit}>
+          <Button onClick={onEdit} className="w-full sm:w-auto">
             <Edit className="h-4 w-4 mr-2" />
             Edit Project
           </Button>

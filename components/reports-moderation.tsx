@@ -116,13 +116,13 @@ export function ReportsModeration() {
         {reports.map((report) => (
           <Card key={report.id}>
             <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    {report.type === "project" ? <Flag className="h-5 w-5" /> : <MessageSquare className="h-5 w-5" />}
-                    {report.type === "project" ? "Project Report" : "Comment Report"}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-lg flex items-center gap-2 break-words">
+                    {report.type === "project" ? <Flag className="h-5 w-5 flex-shrink-0" /> : <MessageSquare className="h-5 w-5 flex-shrink-0" />}
+                    <span className="break-words">{report.type === "project" ? "Project Report" : "Comment Report"}</span>
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="break-words">
                     Reason: {report.reason} • Reported by {report.reporter.name}
                   </CardDescription>
                 </div>
@@ -130,29 +130,30 @@ export function ReportsModeration() {
                   variant={
                     report.status === "pending" ? "secondary" : report.status === "resolved" ? "default" : "outline"
                   }
+                  className="self-start sm:self-center"
                 >
                   {report.status}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-sm text-muted-foreground mb-4 break-words">
                 <strong>Description:</strong> {report.description}
               </p>
               <div className="bg-muted p-3 rounded-lg mb-4">
-                <p className="text-sm">
+                <p className="text-sm break-words">
                   <strong>Reported Content:</strong> {report.target.content}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">By: {report.target.author}</p>
+                <p className="text-xs text-muted-foreground mt-1 break-words">By: {report.target.author}</p>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <p className="text-xs text-muted-foreground">
                   Reported: {new Date(report.reportedAt).toLocaleDateString()}
                 </p>
                 {report.status === "pending" && (
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setSelectedReport(report)}>
+                      <Button variant="outline" size="sm" onClick={() => setSelectedReport(report)} className="w-full sm:w-auto">
                         <Eye className="h-4 w-4 mr-2" />
                         Review
                       </Button>
@@ -165,28 +166,28 @@ export function ReportsModeration() {
                       <div className="space-y-4">
                         <div>
                           <h4 className="font-medium mb-2">Report Details</h4>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                             <div>
-                              <strong>Type:</strong> {report.type}
+                              <strong>Type:</strong> <span className="break-words">{report.type}</span>
                             </div>
                             <div>
-                              <strong>Reason:</strong> {report.reason}
+                              <strong>Reason:</strong> <span className="break-words">{report.reason}</span>
                             </div>
                             <div>
-                              <strong>Reporter:</strong> {report.reporter.name}
+                              <strong>Reporter:</strong> <span className="break-words">{report.reporter.name}</span>
                             </div>
                             <div>
                               <strong>Reported:</strong> {new Date(report.reportedAt).toLocaleDateString()}
                             </div>
                           </div>
-                          <p className="text-sm mt-2">
+                          <p className="text-sm mt-2 break-words">
                             <strong>Description:</strong> {report.description}
                           </p>
                         </div>
                         <div className="bg-muted p-3 rounded-lg">
                           <h4 className="font-medium mb-2">Reported Content</h4>
-                          <p className="text-sm">{report.target.content}</p>
-                          <p className="text-xs text-muted-foreground mt-1">By: {report.target.author}</p>
+                          <p className="text-sm break-words">{report.target.content}</p>
+                          <p className="text-xs text-muted-foreground mt-1 break-words">By: {report.target.author}</p>
                         </div>
                         <div>
                           <label className="text-sm font-medium mb-2 block">Resolution Note</label>
@@ -197,12 +198,12 @@ export function ReportsModeration() {
                           />
                         </div>
                       </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => handleReportAction(report.id, "dismiss")}>
+                      <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                        <Button variant="outline" onClick={() => handleReportAction(report.id, "dismiss")} className="w-full sm:w-auto">
                           <XCircle className="h-4 w-4 mr-2" />
                           Dismiss
                         </Button>
-                        <Button onClick={() => handleReportAction(report.id, "resolve")}>
+                        <Button onClick={() => handleReportAction(report.id, "resolve")} className="w-full sm:w-auto">
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Resolve & Take Action
                         </Button>

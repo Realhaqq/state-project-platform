@@ -127,48 +127,90 @@ export function AuditLogs() {
           <CardDescription>Complete log of all system activities and changes</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Entity</TableHead>
-                <TableHead>Details</TableHead>
-                <TableHead>IP Address</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLogs.map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell className="text-sm">{new Date(log.createdAt).toLocaleString()}</TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium text-sm">{log.userName}</p>
-                      <Badge variant="outline" className="text-xs">
-                        {log.userRole}
-                      </Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getActionBadgeVariant(log.action)}>{log.action}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <p className="font-medium">{log.entityType}</p>
-                      <p className="text-muted-foreground text-xs">{log.entityId}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-xs">
-                    <p className="text-sm truncate" title={log.details}>
-                      {log.details}
-                    </p>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{log.ipAddress}</TableCell>
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Entity</TableHead>
+                  <TableHead>Details</TableHead>
+                  <TableHead>IP Address</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredLogs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="text-sm">{new Date(log.createdAt).toLocaleString()}</TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-sm">{log.userName}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {log.userRole}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getActionBadgeVariant(log.action)}>{log.action}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <p className="font-medium">{log.entityType}</p>
+                        <p className="text-muted-foreground text-xs">{log.entityId}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <p className="text-sm truncate" title={log.details}>
+                        {log.details}
+                      </p>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{log.ipAddress}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {filteredLogs.map((log) => (
+              <Card key={log.id}>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant={getActionBadgeVariant(log.action)} className="text-xs">
+                          {log.action}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {log.entityType}
+                        </Badge>
+                      </div>
+                      <h3 className="font-medium text-sm break-words">{log.userName}</h3>
+                      <p className="text-xs text-muted-foreground break-words">{log.userRole}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <span className="font-medium">Entity ID:</span> <span className="break-words">{log.entityId}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Details:</span> <span className="break-words">{log.details}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">IP:</span> <span className="break-words">{log.ipAddress}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Time:</span> {new Date(log.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </CardContent>
       </Card>
 

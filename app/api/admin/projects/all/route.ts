@@ -25,44 +25,45 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit
 
-    // Build WHERE clause
-    let whereConditions = []
-    let params: any[] = []
+    // Build the query with parameterized conditions
+    let conditions: any[] = []
 
     if (approvalStatus && approvalStatus !== "all") {
-      whereConditions.push(`p.approval_status = $${params.length + 1}`)
-      params.push(approvalStatus)
+      conditions.push(sql`p.approval_status = ${approvalStatus}`)
     }
 
     if (projectStatus && projectStatus !== "all") {
-      whereConditions.push(`p.status = $${params.length + 1}`)
-      params.push(projectStatus)
+      conditions.push(sql`p.status = ${projectStatus}`)
     }
 
     if (search) {
-      whereConditions.push(`(p.title ILIKE $${params.length + 1} OR p.description ILIKE $${params.length + 1})`)
-      params.push(`%${search}%`)
+      conditions.push(sql`(p.title ILIKE ${'%' + search + '%'} OR p.description ILIKE ${'%' + search + '%'})`)
     }
 
     if (lga) {
-      whereConditions.push(`p.lga_id = $${params.length + 1}`)
-      params.push(lga)
+      conditions.push(sql`p.lga_id = ${lga}`)
     }
 
     if (ward) {
-      whereConditions.push(`p.ward_id = $${params.length + 1}`)
-      params.push(ward)
+      conditions.push(sql`p.ward_id = ${ward}`)
     }
 
     if (category && category !== "all") {
-      whereConditions.push(`p.category = $${params.length + 1}`)
-      params.push(category)
+      conditions.push(sql`p.category = ${category}`)
     }
 
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : ""
+    // Build the WHERE clause from conditions
+    let whereSql = sql``
+    if (conditions.length > 0) {
+      whereSql = conditions[0]
+      for (let i = 1; i < conditions.length; i++) {
+        whereSql = sql`${whereSql} AND ${conditions[i]}`
+      }
+      whereSql = sql`WHERE ${whereSql}`
+    }
 
-    // Get projects with pagination
-    const projectsQuery = `
+    // Build the main query with parameterized conditions
+    let query = sql`
       SELECT
         p.id,
         p.title,
@@ -90,28 +91,30 @@ export async function GET(request: NextRequest) {
       LEFT JOIN users u ON p.created_by = u.id
       LEFT JOIN comments c ON p.id = c.project_id
       LEFT JOIN project_images pi ON p.id = pi.project_id
-      ${whereClause}
+      ${whereSql}
       GROUP BY p.id, l.name, w.name, u.name, u.email, u.role
       ORDER BY p.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `
 
-    const projects = await sql.unsafe(projectsQuery)
+    const projects = await query
 
     // Get total count for pagination
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM projects p
-      ${whereClause}
-    `
+    let countQuery = sql`SELECT COUNT(*) as total FROM projects p ${whereSql}`
+    const countResult = await countQuery
 
-    const countResult = await sql.unsafe(countQuery)
-
-    const total = Number.parseInt((countResult as any)[0].total)
+    let total = 0
+    try {
+      const result = countResult as any
+      total = result && result[0] ? Number.parseInt(result[0].total) : 0
+    } catch (error) {
+      console.error("Error parsing count result:", error)
+      total = 0
+    }
     const totalPages = Math.ceil(total / limit)
 
     return NextResponse.json({
-      projects: (projects as any).map((project: any) => ({
+      projects: Array.isArray(projects) ? (projects as any).map((project: any) => ({
         id: project.id,
         title: project.title,
         description: project.description || "",
@@ -132,7 +135,7 @@ export async function GET(request: NextRequest) {
         creator_role: project.creator_role,
         comment_count: Number.parseInt(project.comment_count),
         image_count: Number.parseInt(project.image_count)
-      })),
+      })) : [],
       pagination: {
         page,
         limit,

@@ -237,33 +237,34 @@ export function ProjectModeration() {
             projects.map((project) => (
               <Card key={project.id}>
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
-                      <p className="text-muted-foreground mb-3 line-clamp-2">{project.description}</p>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-semibold mb-2 break-words">{project.title}</h3>
+                      <p className="text-muted-foreground mb-3 line-clamp-2 break-words">{project.description}</p>
                       <div className="flex flex-wrap gap-2 mb-3">
-                        <Badge variant="outline">{project.category}</Badge>
+                        <Badge variant="outline" className="text-xs">{project.category}</Badge>
                         <Badge variant={
                           project.approval_status === 'approved' ? 'default' :
                           project.approval_status === 'rejected' ? 'destructive' :
                           'secondary'
-                        }>
+                        } className="text-xs">
                           {project.approval_status}
                         </Badge>
-                        <Badge variant="outline">{project.project_status}</Badge>
+                        <Badge variant="outline" className="text-xs">{project.project_status}</Badge>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        <p>📍 {project.lga_name}, {project.ward_name}</p>
-                        <p>👤 {project.creator_name} ({project.creator_role})</p>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p className="break-words">📍 {project.lga_name}, {project.ward_name}</p>
+                        <p className="break-words">👤 {project.creator_name} ({project.creator_role})</p>
                         <p>💰 ₦{project.budget?.toLocaleString() || 'N/A'}</p>
                         <p>📅 Created: {new Date(project.created_at).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button 
-                        variant="outline" 
+                    <div className="flex flex-col sm:flex-row gap-2 sm:ml-4 sm:flex-shrink-0">
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleViewProject(project)}
+                        className="w-full sm:w-auto"
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         View
@@ -275,6 +276,7 @@ export function ProjectModeration() {
                             size="sm"
                             onClick={() => handleProjectAction(project.id, 'approve')}
                             disabled={isActionLoading}
+                            className="w-full sm:w-auto"
                           >
                             <CheckCircle className="h-4 w-4 mr-2" />
                             Approve
@@ -284,6 +286,7 @@ export function ProjectModeration() {
                             size="sm"
                             onClick={() => openReviewDialog(project)}
                             disabled={isActionLoading}
+                            className="w-full sm:w-auto"
                           >
                             <XCircle className="h-4 w-4 mr-2" />
                             Reject
@@ -299,21 +302,22 @@ export function ProjectModeration() {
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-6">
+              <div className="text-sm text-muted-foreground text-center sm:text-left">
                 Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} projects
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 items-center">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={!pagination.hasPrev}
+                  className="w-full sm:w-auto"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Previous
                 </Button>
-                <span className="flex items-center px-3 text-sm">
+                <span className="flex items-center px-3 text-sm whitespace-nowrap">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
                 <Button
@@ -321,6 +325,7 @@ export function ProjectModeration() {
                   size="sm"
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={!pagination.hasNext}
+                  className="w-full sm:w-auto"
                 >
                   Next
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -352,21 +357,21 @@ export function ProjectModeration() {
                 <h4 className="font-medium mb-2">Project Details</h4>
                 <p className="text-sm text-muted-foreground">{selectedProject.description}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <strong>Location:</strong> {selectedProject.lga_name}, {selectedProject.ward_name}
+                  <strong>Location:</strong> <span className="break-words">{selectedProject.lga_name}, {selectedProject.ward_name}</span>
                 </div>
                 <div>
-                  <strong>Category:</strong> {selectedProject.category}
+                  <strong>Category:</strong> <span className="break-words">{selectedProject.category}</span>
                 </div>
                 <div>
                   <strong>Budget:</strong> ₦{selectedProject.budget?.toLocaleString() || 'N/A'}
                 </div>
                 <div>
-                  <strong>Creator:</strong> {selectedProject.creator_name}
+                  <strong>Creator:</strong> <span className="break-words">{selectedProject.creator_name}</span>
                 </div>
                 <div>
-                  <strong>Status:</strong> {selectedProject.project_status}
+                  <strong>Status:</strong> <span className="break-words">{selectedProject.project_status}</span>
                 </div>
                 <div>
                   <strong>Comments:</strong> {selectedProject.comment_count}
@@ -390,16 +395,17 @@ export function ProjectModeration() {
               )}
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={closeReviewDialog} disabled={isActionLoading}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={closeReviewDialog} disabled={isActionLoading} className="w-full sm:w-auto">
               Cancel
             </Button>
             {selectedProject?.approval_status === 'pending' && (
               <>
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   onClick={() => selectedProject && handleProjectAction(selectedProject.id, "reject")}
                   disabled={isActionLoading || !reviewNote || reviewNote.trim().length === 0}
+                  className="w-full sm:w-auto"
                 >
                   {isActionLoading ? (
                     <>
@@ -413,9 +419,10 @@ export function ProjectModeration() {
                     </>
                   )}
                 </Button>
-                <Button 
+                <Button
                   onClick={() => selectedProject && handleProjectAction(selectedProject.id, "approve")}
                   disabled={isActionLoading}
+                  className="w-full sm:w-auto"
                 >
                   {isActionLoading ? (
                     <>

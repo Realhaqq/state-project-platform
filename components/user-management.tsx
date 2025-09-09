@@ -187,72 +187,209 @@ export function UserManagement() {
           <CardDescription>Manage user accounts and permissions</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Projects</TableHead>
-                <TableHead>Last Login</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{user.name}</p>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Projects</TableHead>
+                  <TableHead>Last Login</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          user.role === "super_admin"
+                            ? "destructive"
+                            : user.role === "admin"
+                              ? "default"
+                              : user.role === "publisher"
+                                ? "secondary"
+                                : "outline"
+                        }
+                      >
+                        {user.role.replace("_", " ")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={user.isActive ? "default" : "secondary"}>
+                        {user.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{user.projectsCount || 0}</TableCell>
+                    <TableCell>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : "Never"}</TableCell>
+                    <TableCell>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setSelectedRole("")
+                              setSelectedLGA(null)
+                              setSelectedWard(null)
+                            }}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Manage
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Manage User: {user.name}</DialogTitle>
+                            <DialogDescription>Update user permissions and account status</DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <strong>Email:</strong> {user.email}
+                              </div>
+                              <div>
+                                <strong>Current Role:</strong> {user.role.replace("_", " ")}
+                              </div>
+                              <div>
+                                <strong>Status:</strong> {user.isActive ? "Active" : "Inactive"}
+                              </div>
+                              <div>
+                                <strong>Projects:</strong> {user.projectsCount || 0}
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              <Label className="text-sm font-medium">Update User Role</Label>
+                              <RadioGroup
+                                value={selectedRole || user.role}
+                                onValueChange={(value) => {
+                                  setSelectedRole(value)
+                                  // Reset LGA/ward selections when not selecting publisher
+                                  if (value !== "publisher") {
+                                    setSelectedLGA(null)
+                                    setSelectedWard(null)
+                                  }
+                                }}
+                                className="grid grid-cols-2 gap-4"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="citizen" id="citizen" />
+                                  <Label htmlFor="citizen" className="text-sm">Citizen</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="publisher" id="publisher" />
+                                  <Label htmlFor="publisher" className="text-sm">Publisher</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="admin" id="admin" />
+                                  <Label htmlFor="admin" className="text-sm">Admin</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="super_admin" id="super_admin" />
+                                  <Label htmlFor="super_admin" className="text-sm">Super Admin</Label>
+                                </div>
+                              </RadioGroup>
+                            </div>
+
+                            {(selectedRole === "publisher" || (user.role === "publisher" && !selectedRole)) && (
+                              <div className="space-y-3">
+                                <Label className="text-sm font-medium">Publisher Location</Label>
+                                <p className="text-xs text-muted-foreground">
+                                  Select the LGA and Ward where this publisher will be able to submit projects.
+                                </p>
+                                <LGAWardSelector
+                                  onSelectionChange={(lgaId, wardId) => {
+                                    setSelectedLGA(lgaId)
+                                    setSelectedWard(wardId)
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <DialogFooter className="flex gap-2 flex-wrap">
+                            <Button
+                              variant="outline"
+                              onClick={() => handleUserAction(user.id, user.isActive ? "deactivate" : "activate")}
+                            >
+                              {user.isActive ? (
+                                <UserX className="h-4 w-4 mr-2" />
+                              ) : (
+                                <UserCheck className="h-4 w-4 mr-2" />
+                              )}
+                              {user.isActive ? "Deactivate" : "Activate"}
+                            </Button>
+                            {selectedRole && selectedRole !== user.role && (
+                              <Button
+                                onClick={() => handleRoleUpdate(user.id, selectedRole)}
+                                className="bg-primary hover:bg-primary/90"
+                              >
+                                <Shield className="h-4 w-4 mr-2" />
+                                Update Role
+                              </Button>
+                            )}
+                            {user.role === "citizen" && !selectedRole && (
+                              <Button onClick={() => handleUserAction(user.id, "promote")}>
+                                <Shield className="h-4 w-4 mr-2" />
+                                Promote to Publisher
+                              </Button>
+                            )}
+                            {user.role === "publisher" && !selectedRole && (
+                              <Button variant="destructive" onClick={() => handleUserAction(user.id, "demote")}>
+                                Demote to Citizen
+                              </Button>
+                            )}
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {filteredUsers.map((user) => (
+              <Card key={user.id}>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-sm break-words">{user.name}</h3>
+                      <p className="text-xs text-muted-foreground break-words">{user.email}</p>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        user.role === "super_admin"
-                          ? "destructive"
-                          : user.role === "admin"
-                            ? "default"
-                            : user.role === "publisher"
-                              ? "secondary"
-                              : "outline"
-                      }
-                    >
-                      {user.role.replace("_", " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.isActive ? "default" : "secondary"}>
-                      {user.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{user.projectsCount || 0}</TableCell>
-                  <TableCell>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : "Never"}</TableCell>
-                  <TableCell>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
                           variant="outline"
+                          size="sm"
                           onClick={() => {
                             setSelectedUser(user)
                             setSelectedRole("")
                             setSelectedLGA(null)
                             setSelectedWard(null)
                           }}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Manage
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-md">
                         <DialogHeader>
-                          <DialogTitle>Manage User: {user.name}</DialogTitle>
+                          <DialogTitle className="text-lg">Manage User: {user.name}</DialogTitle>
                           <DialogDescription>Update user permissions and account status</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-6">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                             <div>
-                              <strong>Email:</strong> {user.email}
+                              <strong>Email:</strong> <span className="break-words">{user.email}</span>
                             </div>
                             <div>
                               <strong>Current Role:</strong> {user.role.replace("_", " ")}
@@ -313,10 +450,11 @@ export function UserManagement() {
                             </div>
                           )}
                         </div>
-                        <DialogFooter className="flex gap-2 flex-wrap">
+                        <DialogFooter className="flex flex-col sm:flex-row gap-2">
                           <Button
                             variant="outline"
                             onClick={() => handleUserAction(user.id, user.isActive ? "deactivate" : "activate")}
+                            className="w-full sm:w-auto"
                           >
                             {user.isActive ? (
                               <UserX className="h-4 w-4 mr-2" />
@@ -328,31 +466,56 @@ export function UserManagement() {
                           {selectedRole && selectedRole !== user.role && (
                             <Button
                               onClick={() => handleRoleUpdate(user.id, selectedRole)}
-                              className="bg-primary hover:bg-primary/90"
+                              className="w-full sm:w-auto bg-primary hover:bg-primary/90"
                             >
                               <Shield className="h-4 w-4 mr-2" />
                               Update Role
                             </Button>
                           )}
                           {user.role === "citizen" && !selectedRole && (
-                            <Button onClick={() => handleUserAction(user.id, "promote")}>
+                            <Button onClick={() => handleUserAction(user.id, "promote")} className="w-full sm:w-auto">
                               <Shield className="h-4 w-4 mr-2" />
                               Promote to Publisher
                             </Button>
                           )}
                           {user.role === "publisher" && !selectedRole && (
-                            <Button variant="destructive" onClick={() => handleUserAction(user.id, "demote")}>
+                            <Button variant="destructive" onClick={() => handleUserAction(user.id, "demote")} className="w-full sm:w-auto">
                               Demote to Citizen
                             </Button>
                           )}
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <Badge
+                      variant={
+                        user.role === "super_admin"
+                          ? "destructive"
+                          : user.role === "admin"
+                            ? "default"
+                            : user.role === "publisher"
+                              ? "secondary"
+                              : "outline"
+                      }
+                      className="text-xs"
+                    >
+                      {user.role.replace("_", " ")}
+                    </Badge>
+                    <Badge variant={user.isActive ? "default" : "secondary"} className="text-xs">
+                      {user.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p>📊 Projects: {user.projectsCount || 0}</p>
+                    <p>🕒 Last Login: {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : "Never"}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </CardContent>
       </Card>
 

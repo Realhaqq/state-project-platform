@@ -152,14 +152,14 @@ export function ProjectEditForm({ projectId, onBack, onSave }: ProjectEditFormPr
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={onBack}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <Button variant="outline" size="sm" onClick={onBack} className="w-fit">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Edit Project</h1>
-          <p className="text-muted-foreground">Update project information</p>
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold break-words">Edit Project</h1>
+          <p className="text-muted-foreground break-words">Update project information</p>
         </div>
       </div>
 
@@ -295,11 +295,11 @@ export function ProjectEditForm({ projectId, onBack, onSave }: ProjectEditFormPr
         </Card>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={onBack}>
+        <div className="flex flex-col sm:flex-row sm:justify-end gap-4">
+          <Button type="button" variant="outline" onClick={onBack} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" disabled={saving} className="w-full sm:w-auto">
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             <Save className="h-4 w-4 mr-2" />
             Save Changes

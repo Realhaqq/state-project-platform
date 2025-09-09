@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart3, Eye, MessageSquare, TrendingUp, Clock, CheckCircle, AlertCircle, DollarSign } from "lucide-react"
+import { BarChart3, Eye, MessageSquare, TrendingUp, Clock, CheckCircle, AlertCircle, DollarSign, Badge } from "lucide-react"
 
 interface PublisherAnalyticsProps {
   userId: string
@@ -195,19 +195,29 @@ export function PublisherAnalytics({ userId }: PublisherAnalyticsProps) {
               <p className="text-center text-muted-foreground py-4">No projects yet</p>
             ) : (
               recentProjects.map((project) => (
-                <div key={project.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div className="flex-1">
-                    <h4 className="font-medium">{project.title}</h4>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                      <span>Status: {project.status}</span>
-                      <span>Approval: {project.approval_status}</span>
-                      <span>Comments: {project.comment_count}</span>
+                <div key={project.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium break-words">{project.title}</h4>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Badge variant="outline" className="text-xs">{project.status}</Badge>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Badge variant={
+                          project.approval_status === 'approved' ? 'default' :
+                          project.approval_status === 'rejected' ? 'destructive' :
+                          'secondary'
+                        } className="text-xs">
+                          {project.approval_status}
+                        </Badge>
+                      </span>
+                      <span>💬 {project.comment_count}</span>
                       {project.budget_naira && (
-                        <span>Budget: ₦{(project.budget_naira / 1000000).toFixed(1)}M</span>
+                        <span>💰 ₦{(project.budget_naira / 1000000).toFixed(1)}M</span>
                       )}
                     </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-muted-foreground self-start sm:self-center">
                     {new Date(project.created_at).toLocaleDateString()}
                   </div>
                 </div>

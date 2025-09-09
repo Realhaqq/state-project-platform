@@ -4,8 +4,6 @@ import { authOptions } from "@/lib/auth"
 import { neon } from "@neondatabase/serverless"
 import { ProjectDetails } from "@/components/project-details"
 import { ProjectComments } from "@/components/project-comments"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
 
 const sql = neon(process.env.DATABASE_URL!)
 
@@ -60,17 +58,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader />
-
+    <div className="bg-background">
       <main className="container mx-auto px-4 py-8">
         <ProjectDetails project={project} session={session} />
         <div className="mt-8">
           <ProjectComments projectId={params.id} session={session} />
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   )
 }

@@ -1,14 +1,10 @@
 import { Suspense } from "react"
 import { ProjectSearch } from "@/components/project-search"
 import { ProjectFilters } from "@/components/project-filters"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
 
 export default function ProjectsPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader />
-
+    <div className="bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Development Projects</h1>
@@ -28,8 +24,6 @@ export default function ProjectsPage() {
           </div>
         </div>
       </div>
-
-      <SiteFooter />
     </div>
   )
 }

@@ -222,30 +222,31 @@ export function ProjectManagement({ userId }: { userId: string }) {
               <p className="text-center text-muted-foreground py-8">No projects found</p>
             ) : (
               filteredProjects.map((project) => (
-                <div key={project.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-medium">{project.title}</h3>
+                <div key={project.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="font-medium break-words">{project.title}</h3>
                       {getStatusBadge(project.status, project.approval_status)}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{project.description}</p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mb-2 break-words line-clamp-2">{project.description}</p>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                       {project.lga_name && project.ward_name && (
-                        <span>{project.lga_name}, {project.ward_name}</span>
+                        <span className="break-words">📍 {project.lga_name}, {project.ward_name}</span>
                       )}
                       {project.budget_naira && (
-                        <span>Budget: ₦{(project.budget_naira / 1000000).toFixed(1)}M</span>
+                        <span>💰 ₦{(project.budget_naira / 1000000).toFixed(1)}M</span>
                       )}
-                      <span>Comments: {project.comment_count}</span>
-                      <span>Images: {project.image_count}</span>
-                      <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
+                      <span>💬 {project.comment_count}</span>
+                      <span>🖼️ {project.image_count}</span>
+                      <span>📅 {new Date(project.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:flex-shrink-0">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleViewProject(project.id)}
+                      className="w-full sm:w-auto"
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       View
@@ -255,6 +256,7 @@ export function ProjectManagement({ userId }: { userId: string }) {
                       size="sm"
                       onClick={() => handleEditProject(project.id)}
                       disabled={project.approval_status === 'approved'}
+                      className="w-full sm:w-auto"
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
