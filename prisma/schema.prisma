@@ -376,12 +376,11 @@ model AuditLog {
 
 model RateLimit {
   id             String   @id @default(uuid()) @db.Uuid
-  key            String
+  key            String   @unique
   windowStartsAt DateTime @map("window_starts_at")
   count          Int
 
   @@index([key])
   @@index([windowStartsAt])
-  @@unique([key, windowStartsAt])
   @@map("rate_limits")
 }

@@ -13,6 +13,7 @@ interface AdminStats {
   approvedProjects: number
   totalReports: number
   pendingReports: number
+  totalComments?: number
   usersByRole: {
     citizen: number
     publisher: number
@@ -45,7 +46,8 @@ export function AdminOverview() {
       const response = await fetch("/api/admin/stats")
       if (response.ok) {
         const data = await response.json()
-        setStats(data)
+        // Ensure totalComments is present for UI
+        setStats({ ...data, totalComments: data.totalComments || 0 })
       }
     } catch (error) {
       console.error("Failed to fetch admin stats:", error)
@@ -191,7 +193,7 @@ export function AdminOverview() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm">Planning</span>
+              <span className="text-sm">Proposed</span>
               <Badge variant="secondary">{stats.projectsByStatus.planned}</Badge>
             </div>
             <div className="flex justify-between items-center">
@@ -203,6 +205,30 @@ export function AdminOverview() {
               <Badge variant="outline" className="border-green-500 text-green-700">
                 {stats.projectsByStatus.completed}
               </Badge>
+            </div>
+            <div className="flex justify-between items-center mt-4">
+              <span className="text-sm">Ward Covered</span>
+              <Badge variant="default">274</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">IGAs Covered</span>
+              <Badge variant="default">25</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Active Users</span>
+              <Badge variant="default">{stats.totalUsers}</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Publishers</span>
+              <Badge variant="secondary">{stats.usersByRole.publisher}</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Comments</span>
+              <Badge variant="default">{stats.totalComments || 0}</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Reports</span>
+              <Badge variant="default">{stats.totalReports}</Badge>
             </div>
           </CardContent>
         </Card>

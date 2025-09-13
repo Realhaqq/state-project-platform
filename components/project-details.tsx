@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { ReportForm } from "@/components/report-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -26,9 +27,8 @@ interface ProjectDetailsProps {
 }
 
 export function ProjectDetails({ project, session }: ProjectDetailsProps) {
-  const [reportReason, setReportReason] = useState("")
-  const [reportDescription, setReportDescription] = useState("")
-  const [isReporting, setIsReporting] = useState(false)
+  // ReportForm handles its own state and submission
+  const [reportDialogOpen, setReportDialogOpen] = useState(false)
 
   // Helper function to get full image URL
   const getImageUrl = (storagePath: string) => {
@@ -87,58 +87,7 @@ export function ProjectDetails({ project, session }: ProjectDetailsProps) {
     return Math.round((elapsed / total) * 100)
   }
 
-  const handleReport = async () => {
-    if (!session) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to report this project.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!reportReason || !reportDescription.trim()) {
-      toast({
-        title: "Missing information",
-        description: "Please select a reason and provide a description.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsReporting(true)
-    try {
-      const response = await fetch("/api/reports", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "project",
-          targetId: project.id,
-          reason: reportReason,
-          description: reportDescription,
-        }),
-      })
-
-      if (response.ok) {
-        toast({
-          title: "Report submitted",
-          description: "Thank you for your report. We'll review it shortly.",
-        })
-        setReportReason("")
-        setReportDescription("")
-      } else {
-        throw new Error("Failed to submit report")
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit report. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsReporting(false)
-    }
-  }
+  // Removed custom report handler, now handled by ReportForm
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -195,59 +144,16 @@ export function ProjectDetails({ project, session }: ProjectDetailsProps) {
           <Share2 className="h-4 w-4 mr-2" />
           Share
         </Button>
-        <Dialog>
+        <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => setReportDialogOpen(true)}>
               <Flag className="h-4 w-4 mr-2" />
               Report
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Report Project</DialogTitle>
-              <DialogDescription>
-                Help us maintain quality by reporting inappropriate or inaccurate content.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Reason for reporting</label>
-                <Select value={reportReason} onValueChange={setReportReason}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a reason" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="inappropriate">Inappropriate content</SelectItem>
-                    <SelectItem value="inaccurate">Inaccurate information</SelectItem>
-                    <SelectItem value="spam">Spam or duplicate</SelectItem>
-                    <SelectItem value="fraud">Fraudulent project</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Description</label>
-                <Textarea
-                  placeholder="Please provide more details about your report..."
-                  value={reportDescription}
-                  onChange={(e) => setReportDescription(e.target.value)}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setReportReason("")
-                  setReportDescription("")
-                }}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleReport} disabled={isReporting}>
-                {isReporting ? "Submitting..." : "Submit Report"}
-              </Button>
-            </DialogFooter>
+            {/* Use the shared ReportForm component for correct validation and submission */}
+            <ReportForm projectId={project.id} projectTitle={project.title} onSuccess={() => setReportDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>

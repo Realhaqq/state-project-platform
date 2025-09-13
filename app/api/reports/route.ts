@@ -14,7 +14,6 @@ const reportSchema = z.object({
   reporterEmail: z.string().email().optional(),
   reporterPhone: z.string().optional(),
   message: z.string().min(1).max(1000),
-  captchaToken: z.string().min(1),
 })
 
 export async function GET(request: NextRequest) {
@@ -88,22 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { projectId, reporterName, reporterEmail, reporterPhone, message, captchaToken } = reportSchema.parse(body)
-
-    // Verify captcha
-    const captchaResponse = await fetch("https://hcaptcha.com/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        secret: process.env.HCAPTCHA_SECRET_KEY!,
-        response: captchaToken,
-      }),
-    })
-
-    const captchaResult = await captchaResponse.json()
-    if (!captchaResult.success) {
-      return new Response("Captcha verification failed", { status: 400 })
-    }
+    const { projectId, reporterName, reporterEmail, reporterPhone, message } = reportSchema.parse(body)
 
     // Insert report
     const [report] = await sql`

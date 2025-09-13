@@ -50,7 +50,8 @@ export function LatestProjectsCarousel() {
         const response = await fetch("/api/projects/latest")
         if (response.ok) {
           const data = await response.json()
-          setProjects(data.projects || [])
+          // Only show last 20 projects
+          setProjects((data.projects || []).slice(0, 20))
         }
       } catch (error) {
         console.error("Failed to fetch latest projects:", error)
@@ -85,12 +86,12 @@ export function LatestProjectsCarousel() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800"
-      case "pending":
+      case "proposed":
         return "bg-yellow-100 text-yellow-800"
-      case "rejected":
-        return "bg-red-100 text-red-800"
+      case "ongoing":
+        return "bg-blue-100 text-blue-800"
+      case "completed":
+        return "bg-green-100 text-green-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -119,7 +120,10 @@ export function LatestProjectsCarousel() {
     )
   }
 
-  const visibleProjects = projects.slice(currentIndex, currentIndex + 3)
+  // Responsive: 1 card on mobile, 3 on desktop
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768
+  const cardsToShow = isMobile ? 1 : 3
+  const visibleProjects = projects.slice(currentIndex, currentIndex + cardsToShow)
 
   return (
     <div className="w-full">
@@ -153,14 +157,16 @@ export function LatestProjectsCarousel() {
               <Card className="bg-card hover:shadow-lg transition-shadow cursor-pointer">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-lg font-semibold text-balance leading-tight">{project.title}</CardTitle>
-                    <Badge className={getStatusColor(project.status)}>{project.status.replace("_", " ")}</Badge>
+                    <CardTitle className="text-xl font-bold text-balance leading-tight">{project.title}</CardTitle>
+                    <Badge className={getStatusColor(project.status) + " text-xs px-2 py-1 font-semibold"}>
+                      {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Project Image */}
                   {project.images && project.images.length > 0 && (
-                    <div className="w-full h-32 overflow-hidden rounded-lg">
+                    <div className="w-full h-36 overflow-hidden rounded-lg border border-border">
                       <img
                         src={getImageUrl(project.images[0].storage_path)}
                         alt={project.images[0].caption || project.title}
@@ -172,27 +178,27 @@ export function LatestProjectsCarousel() {
                     </div>
                   )}
 
-                  <p className="text-sm text-muted-foreground text-pretty">{project.description}</p>
+                  <p className="text-base text-muted-foreground text-pretty font-normal">{project.description}</p>
 
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-base text-muted-foreground font-medium">
                     <MapPin className="h-4 w-4" />
                     <span>
                       {project.ward_name}, {project.lga_name}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-base text-muted-foreground font-medium">
                     <Calendar className="h-4 w-4" />
                     <span>{new Date(project.start_date).toLocaleDateString()}</span>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-base font-medium">
                       <span className="flex items-center gap-1">
                         <TrendingUp className="h-4 w-4" />
                         Progress
                       </span>
-                      <span className="font-medium">{project.completion_percentage}%</span>
+                      <span className="font-bold">{project.completion_percentage}%</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
                       <div
@@ -203,7 +209,7 @@ export function LatestProjectsCarousel() {
                   </div>
 
                   <div className="pt-2 border-t border-border">
-                    <p className="text-sm font-medium text-foreground">Budget: {formatCurrency(project.budget)}</p>
+                    <p className="text-base font-bold text-foreground">Budget: {formatCurrency(project.budget)}</p>
                   </div>
                 </CardContent>
               </Card>

@@ -20,6 +20,8 @@ export function ProjectFilters() {
   const [selectedWard, setSelectedWard] = useState("all")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
+  const [selectedYear, setSelectedYear] = useState("all")
+  const [selectedMonth, setSelectedMonth] = useState("all")
   const [wards, setWards] = useState<Array<{ id: string; name: string; lga_id: string }>>([])
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -32,6 +34,8 @@ export function ProjectFilters() {
     setSelectedWard(searchParams.get("ward") || "all")
     setSelectedCategory(searchParams.get("category") || "all")
     setSelectedStatus(searchParams.get("status") || "all")
+    setSelectedYear(searchParams.get("year") || "all")
+    setSelectedMonth(searchParams.get("month") || "all")
   }, [searchParams])
 
   useEffect(() => {
@@ -109,6 +113,48 @@ export function ProjectFilters() {
         <CardDescription>Narrow down your project search</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div>
+          <label className="text-sm font-medium mb-2 block">Year</label>
+          <Select
+            value={selectedYear}
+            onValueChange={(value) => {
+              setSelectedYear(value)
+              updateFilters("year", value)
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Year" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Years</SelectItem>
+              {Array.from({ length: 6 }, (_, i) => 2020 + i).map((year) => (
+                <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-2 block">Month</label>
+          <Select
+            value={selectedMonth}
+            onValueChange={(value) => {
+              setSelectedMonth(value)
+              updateFilters("month", value)
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Month" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Months</SelectItem>
+              {[
+                "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
+              ].map((month, idx) => (
+                <SelectItem key={month} value={(idx + 1).toString()}>{month}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div>
           <label className="text-sm font-medium mb-2 block">Local Government Area</label>
           <Select

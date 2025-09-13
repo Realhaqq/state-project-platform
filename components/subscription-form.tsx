@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
-import { CaptchaWrapper } from "@/components/captcha-wrapper"
 import { Mail, MapPin } from "lucide-react"
 
 const subscriptionSchema = z.object({
@@ -46,7 +45,6 @@ type SubscriptionFormData = z.infer<typeof subscriptionSchema>
 
 export function SubscriptionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [lgas, setLgas] = useState<any[]>([])
   const [wards, setWards] = useState<any[]>([])
   const [pollingUnits, setPollingUnits] = useState<any[]>([])
@@ -180,15 +178,6 @@ export function SubscriptionForm() {
   }
 
   const onSubmit = async (data: SubscriptionFormData) => {
-    if (!captchaToken) {
-      toast({
-        title: "Captcha required",
-        description: "Please complete the captcha verification.",
-        variant: "destructive",
-      })
-      return
-    }
-
     setIsSubmitting(true)
 
     try {
@@ -199,7 +188,6 @@ export function SubscriptionForm() {
         },
         body: JSON.stringify({
           ...data,
-          captchaToken,
         }),
       })
 
@@ -214,7 +202,6 @@ export function SubscriptionForm() {
       })
 
       reset()
-      setCaptchaToken(null)
     } catch (error) {
       console.error("Subscription error:", error)
       toast({
@@ -372,13 +359,7 @@ export function SubscriptionForm() {
             {errors.traits && <p className="text-sm text-destructive">{errors.traits.message}</p>}
           </div>
 
-          {/* Captcha */}
-          <div className="space-y-2">
-            <Label>Security Verification</Label>
-            <CaptchaWrapper onVerify={setCaptchaToken} onError={() => setCaptchaToken(null)} />
-          </div>
-
-          <Button type="submit" className="w-full" disabled={isSubmitting || !captchaToken}>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Subscribing..." : "Subscribe to Reports"}
           </Button>
         </form>

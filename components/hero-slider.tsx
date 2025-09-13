@@ -15,27 +15,33 @@ interface HeroSlide {
 const defaultSlides: HeroSlide[] = [
   {
     id: 1,
-    title: "Niger State Development Projects",
-    subtitle: "Tracking progress across all 274 wards",
-    image_url: "/niger-state-development-infrastructure-projects.jpg",
+    title: "Niger State Ward Development Projects...",
+    subtitle: "For good governance, greater ruler & community development.",
+    image_url: "/slide1.jpg",
   },
   {
     id: 2,
-    title: "Transparent Governance",
-    subtitle: "Real-time updates on community development",
-    image_url: "/government-transparency-community-meeting.jpg",
+    title: "Transforming Communities",
+    subtitle: "All communities in 274 wards benefit. All Nigerlites benefit.",
+    image_url: "/slide2.jpg",
   },
   {
     id: 3,
-    title: "Community Engagement",
-    subtitle: "Your voice matters in development planning",
-    image_url: "/community-engagement-town-hall-meeting.jpg",
+    title: "Transparent & Accountable Governance",
+    subtitle: "Real-time updates in community development projects.",
+    image_url: "/slide3.jpg",
   },
   {
     id: 4,
+    title: "Community Engagement",
+    subtitle: "Your voice matters in community planning. Tell your story.",
+    image_url: "/slide4.jpg",
+  },
+  {
+    id: 5,
     title: "Progress Monitoring",
-    subtitle: "See how projects are transforming communities",
-    image_url: "/construction-progress-monitoring-development.jpg",
+    subtitle: "Track and see how projects are transforming communities.",
+    image_url: "/slide5.jpg",
   },
 ]
 
@@ -46,8 +52,7 @@ export function HeroSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length)
-    }, 2000) // 2 seconds as specified
-
+    }, 5000) // 5 seconds as specified in feedback
     return () => clearInterval(timer)
   }, [slides.length])
 
@@ -85,11 +90,11 @@ export function HeroSlider() {
                     className="bg-primary hover:bg-primary/90"
                     asChild
                   >
-                    <a href={slide.link_url}>Explore Projects</a>
+                    <a href={slide.link_url}>Track Projects</a>
                   </Button>
                 ) : (
                   <Button size="lg" className="bg-primary hover:bg-primary/90">
-                    Explore Projects
+                    Track Projects
                   </Button>
                 )}
                 <Button
